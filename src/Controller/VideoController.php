@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Video;
 use App\Repository\VideoRepository;
+use App\Service\UserManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,8 +23,18 @@ final class VideoController extends AbstractController
     #[Route('/api/videos', name: 'app_videos_api')]
     public function getVideos(
         Request $request,
+        UserManager $userManager,
         VideoRepository $videoRepository,
     ): JsonResponse {
+        $user = $userManager->getCurrentUser();
+        $response = new JsonResponse();
+
+        if ($userManager->isNewUser()){
+            $response->headers->setCookie(
+                $userManager->createNewUserCookie($user)
+            );
+        }
+
         $page = $request->query->getInt('page', 1);
         $limit = $request->query->getInt('limit', 10);
 
@@ -39,5 +50,9 @@ final class VideoController extends AbstractController
             ],$videos),
             'nextPage' => count($videos) === $limit ? $page + 1 : null,
         ]);
+    }
+
+    public function uploadVideo(Request $request, string $videoUploadDir): Response{
+        return [];
     }
 }
