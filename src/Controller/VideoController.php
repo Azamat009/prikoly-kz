@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Video;
+use App\Form\VideoType;
 use App\Repository\VideoRepository;
 use App\Service\UserManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -52,7 +54,29 @@ final class VideoController extends AbstractController
         ]);
     }
 
-    public function uploadVideo(Request $request, string $videoUploadDir): Response{
-        return [];
+    #[Route('/upload', name: 'video_upload')]
+    public function uploadVideo(Request $request, EntityManagerInterface $entityManager): Response{
+        $video = new Video();
+        $form = $this->createForm(VideoType::class, $video);
+        $form->handleRequest($request);
+        $videoUploadDir = 'uploads/videos';
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $videoFile = $form->get('videoFile')->getData();
+
+            if ($videoFile) {
+                $filename = uniqid() . '.' . $videoFile->guessExtension();
+                $videoFile->move($videoUploadDir, $filename);
+                $video->setFilePath('/uploads/videos/'.$filename);
+            }
+            $video->setCreatedAt(new \DateTimeImmutable());
+
+            $entityManager->persist($video);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('/upload');
+        }
+        return $this->render('video/upload.html.twig', [
+            'form' => $form->createView(),]);
     }
 }
