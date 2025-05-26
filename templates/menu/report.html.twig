@@ -1,4 +1,5 @@
+{# templates/menu/_report_form.html.twig #}
 {{ form_start(form) }}
-    {{ form_widget(form.report) }}
-<button type="submit">Отправить</button>
-{{  form_end(form) }}
+    {{ form_widget(form.reason) }} {# Теперь используем правильное имя поля #}
+<button type="submit">Отправить жалобу</button>
+{{ form_end(form) }}

@@ -12,10 +12,9 @@ class ReportType extends AbstractType{
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('report', TextareaType::class, [
-                'attr' => [
-                    'class' => 'form-control',
-                ]
+            ->add('reason', TextareaType::class, [
+                'attr' => ['class' => 'form-control'],
+                'label' => 'Текст жалобы'
             ]);
     }
 

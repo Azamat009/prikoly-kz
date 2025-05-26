@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Feedback;
 use App\Entity\Report;
 use App\Form\FeedbackType;
+use App\Form\ReportType;
 use App\Service\UserManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,7 +27,7 @@ final class MenuController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $feedback->setUserId($userManager->getCurrentUser());
+//            $feedback->setUser($userManager->getCurrentUser());
             $entityManager->persist($feedback);
             $entityManager->flush();
 
@@ -45,10 +46,10 @@ final class MenuController extends AbstractController
         EntityManagerInterface $entityManager,
     ): Response{
         $report = new Report();
-        $form = $this->createForm(Report::class, $report);
+        $form = $this->createForm(ReportType::class, $report);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $report->addUserId($userManager->getCurrentUser());
+//            $report->addUserId($userManager->getCurrentUser());
             $entityManager->persist($report);
             $entityManager->flush();
 
