@@ -22,21 +22,25 @@ class UserManager{
     }
 
     public function getCurrentUser(): User{
-        $request = $this->requestStack->getCurrentRequest();
-        $uuid = $request->cookies->get('user_uuid');
-        $user = null;
+        try {
+            $request = $this->requestStack->getCurrentRequest();
+            $uuid = $request->cookies->get('user_uuid');
+            $user = null;
 
-        if ($uuid) {
-            $uuidObj = Uuid::fromString($uuid);
-            $user = $this->entityManager->getRepository(User::class)->findOneBy(['uuid' => $uuidObj]);
+            if ($uuid) {
+                $uuidObj = Uuid::fromString($uuid);
+                $user = $this->entityManager->getRepository(User::class)->findOneBy(['uuid' => $uuidObj]);
+            }
+
+            if (!$user) {
+                $user = $this->createNewUser();
+                $this->isNewUser = true;
+            }
+
+            return $user;
+        } catch (\Exception $exception){
+            throw $exception;
         }
-
-        if (!$user) {
-            $user = $this->createNewUser();
-            $this->isNewUser = true;
-        }
-
-        return $user;
     }
 
     public function isNewUser(): bool{
@@ -56,13 +60,17 @@ class UserManager{
     }
 
     private function createNewUser(): User{
-        $user = new User();
-        $user->setUuid(Uuid::uuid4());
+        try {
+            $user = new User();
+            $user->setUuid(Uuid::uuid4());
 
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
 
-        return $user;
+            return $user;
+        } catch (\Exception $exception){
+            throw $exception;
+        }
     }
 
 }

@@ -2,35 +2,32 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Video;
+use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
-class VideoCrudController extends AbstractCrudController
+class UserCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
-        return Video::class;
+        return User::class;
     }
 
     public function configureCrud(Crud $crud): Crud{
         return $crud
-            ->setEntityLabelInSingular('Video')
-            ->setEntityLabelInPlural('Videos')
-            ->setSearchFields(['id', 'title', 'description', 'filePath', 'createdAt'])
-            ->setDefaultSort(['createdAt' => 'ASC']);
+            ->setEntityLabelInSingular('User')
+            ->setEntityLabelInPlural('Users')
+            ->setSearchFields(['id', 'uuid'])
+            ->setDefaultSort(['id' => 'DESC']);
     }
 
     public function configureFields(string $pageName): iterable{
         yield IdField::new('id', 'ID');
-        yield TextField::new('title', 'Title');
-        yield TextField::new('description', 'Description');
-        yield TextField::new('filePath', 'Video URL');
-        yield TextField::new('createdAt', 'Created At');
-
+        yield TextField::new('uuid', 'UUID');
     }
 
     /*

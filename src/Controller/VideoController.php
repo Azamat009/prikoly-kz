@@ -16,11 +16,21 @@ use Symfony\Component\Routing\Attribute\Route;
 final class VideoController extends AbstractController
 {
     #[Route('/', name: 'Главная')]
-    public function index(): Response
+    public function index(UserManager $userManager): Response
     {
-        return $this->render('video/index.html.twig', [
+        $user = $userManager->getCurrentUser();
+
+        $response = $this->render('video/index.html.twig', [
             'controller_name' => 'VideoController',
         ]);
+
+        if ($userManager->isNewUser()) {
+            $response->headers->setCookie(
+                $userManager->createNewUserCookie($user)
+            );
+        }
+
+        return $response;
     }
     #[Route('/api/videos', name: 'app_videos_api')]
     public function getVideos(
@@ -28,30 +38,25 @@ final class VideoController extends AbstractController
         UserManager $userManager,
         VideoRepository $videoRepository,
     ): JsonResponse {
-        $user = $userManager->getCurrentUser();
-        $response = new JsonResponse();
+        try {
+            $page = $request->query->getInt('page', 1);
+            $limit = $request->query->getInt('limit', 10);
 
-        if ($userManager->isNewUser()){
-            $response->headers->setCookie(
-                $userManager->createNewUserCookie($user)
-            );
+            $videos = $videoRepository->findPaginatedVideos($page, $limit);
+
+            return $this->json([
+                'videos' => array_map(fn($video) => [
+                    'id' => $video->getId(),
+                    'title' => $video->getTitle(),
+                    'description' => $video->getDescription(),
+                    'filePath' => $video->getFilePath(),
+                    'createdAt' => $video->getCreatedAt()->format('Y-m-d H:i:s'),
+                ], $videos),
+                'nextPage' => count($videos) === $limit ? $page + 1 : null,
+            ]);
+        } catch (\Exception $e) {
+            throw $this->createNotFoundException($e->getMessage());
         }
-
-        $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 10);
-
-        $videos = $videoRepository->findPaginatedVideos($page, $limit);
-
-        return $this->json([
-            'videos' => array_map(fn ($video) => [
-                'id' => $video->getId(),
-                'title' => $video->getTitle(),
-                'description' => $video->getDescription(),
-                'filePath' => $video->getFilePath(),
-                'createdAt' => $video->getCreatedAt()->format('Y-m-d H:i:s'),
-            ],$videos),
-            'nextPage' => count($videos) === $limit ? $page + 1 : null,
-        ]);
     }
 
     #[Route('/upload', name: 'video_upload')]
