@@ -1,7 +1,185 @@
-{% extends 'base.html.twig' %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Приколы KZ</title>
+    <style>
+        body {
+            background-color: #000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+            height: 100vh;
+        }
+        /*.main-menu{*/
+        /*    background-color: #0a53be;*/
+        /*}*/
+        /*.dropdown{*/
+        /*    background-color: #0a3622;*/
+        /*}*/
+        /*.dropdown-content{*/
+        /*    background-color: #0d6efd;*/
+        /*}*/
+        #video-feed{
+            /*background-color: #1ea471;*/
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .video-container{
+            position: relative;
+            height: 100%;
+            width: 100%;
+            scroll-snap-align: start;
+        }
+        video{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .video-info{
+            position: absolute;
+            bottom: 80px;
+            left: 12px;
+            max-width: 70%;
+        }
+        .video-title{
+            font-size: 18px;
+            margin-bottom: 8px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .loading{
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color:white;
+            font-size: 24px;
+        }
 
-{% block content %}
-    <div class="video-loader">
-        <div class="loader"></div>
-    </div>
-{% endblock %}
+        #video-feed::-webkit-scrollbar {
+            display: none;
+        }
+        #video-feed {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body>
+    <main id="video-feed"></main>
+    <div class="loading">Загрузка...</div>
+
+    {{ encore_entry_script_tags('app') }}
+</body>
+</html>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const videoFeed = document.getElementById('video-feed');
+        const loadingIndicator = document.querySelector('.loading');
+        let currentPage = 1;
+        let isLoading = false;
+        let videosLoaded = false;
+
+        function createVideoElement(video) {
+            const container = document.createElement('div');
+            container.className = 'video-container';
+
+            const videoEl = document.createElement('video');
+            videoEl.playsInline = true;
+            videoEl.muted = true;
+            videoEl.autoplay = true;
+            videoEl.loop = true;
+            videoEl.src = video.filePath;
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'video-info';
+            infoDiv.innerHTML = `<h3 class="video-title">${video.title}</h3>`;
+
+            container.appendChild(videoEl);
+            container.appendChild(infoDiv);
+
+            videoEl.addEventListener('click', () => {
+                videoEl.muted = !videoEl.muted;
+            });
+
+            return container;
+        }
+
+        async function loadVideos() {
+            if (isLoading) return;
+            isLoading = true;
+
+            try {
+                const response = await fetch(`/api/videos?page=${currentPage}`);
+                const data = await response.json();
+
+                if (data.videos.length > 0) {
+                    data.videos.forEach(video => {
+                        const videoElement = createVideoElement(video);
+                        videoFeed.appendChild(videoElement);
+                    });
+
+                    videosLoaded = true;
+                    loadingIndicator.style.display = 'none';
+                    currentPage = data.nextPage || currentPage;
+
+                    if (currentPage === 1) {
+                        const firstVideo = videoFeed.querySelector('video');
+                        if (firstVideo) {
+                            firstVideo.play().catch(e => console.log('Автовоспроизведение:', e));
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        function handleScroll() {
+            if (isLoading || !videosLoaded) return;
+
+            const lastVideo = videoFeed.lastElementChild;
+            if (!lastVideo) return;
+
+            const lastVideoOffset = lastVideo.offsetTop + lastVideo.clientHeight;
+            const pageOffset = window.pageYOffset + window.innerHeight;
+
+            if (pageOffset > lastVideoOffset - 10) {
+                loadVideos();
+            }
+        }
+
+        loadVideos();
+        window.addEventListener('scroll', handleScroll);
+
+        function handleTouchStart(event) {
+            if (videosLoaded) {
+                event.preventDefault();
+            }
+        }
+
+        let touchStartY = 0;
+        videoFeed.addEventListener('touchstart', e => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        videoFeed.addEventListener('touchend', e => {
+            const touchEndY = e.changedTouches[0].clientY;
+            const diff = touchStartY - touchEndY;
+
+            if (diff > 50) {
+                loadVideos();
+            }
+        }, { passive: true });
+    });
+</script>

@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Video;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -29,7 +30,7 @@ class VideoCrudController extends AbstractCrudController
         yield TextField::new('title', 'Title');
         yield TextField::new('description', 'Description');
         yield TextField::new('filePath', 'Video URL');
-        yield TextField::new('createdAt', 'Created At');
+        yield DateField::new('createdAt', 'Created At');
 
     }
 

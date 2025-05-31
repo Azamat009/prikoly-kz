@@ -1,10 +1,149 @@
-{# templates/video/upload.html.twig #}
-{% extends 'base.html.twig' %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Загрузка видео</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
 
-{% block content %}
-    <h1>Загрузка видео</h1>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .upload-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #121212;
+            border-radius: 12px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #222;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .btn-upload {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: #ff0050;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-upload:hover {
+            background: #e00045;
+        }
+
+        .flash-message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .flash-success {
+            background: #4CAF50;
+        }
+
+        .upload-preview {
+            margin-top: 20px;
+            display: none;
+        }
+
+        #videoPreview {
+            width: 100%;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="upload-container">
+    <h1>Загрузить видео</h1>
+
+    {% for message in app.flashes('success') %}
+        <div class="flash-message flash-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
     {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button type="submit">Загрузить</button>
+    <div class="form-group">
+        {{ form_label(form.title) }}
+        {{ form_widget(form.title) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.videoFile) }}
+        {{ form_widget(form.videoFile) }}
+    </div>
+
+    <button type="submit" class="btn-upload">Загрузить</button>
     {{ form_end(form) }}
-{% endblock %}
+
+    <div class="upload-preview">
+        <video id="videoPreview" controls></video>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const fileInput = document.querySelector('input[type="file"]');
+        const videoPreview = document.getElementById('videoPreview');
+        const previewContainer = document.querySelector('.upload-preview');
+
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+
+                const validTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo'];
+                if (!validTypes.includes(file.type)) {
+                    alert('Пожалуйста, выберите видео файл (MP4, MOV, AVI)');
+                    this.value = '';
+                    return;
+                }
+
+                const videoURL = URL.createObjectURL(file);
+                videoPreview.src = videoURL;
+                previewContainer.style.display = 'block';
+            }
+        });
+    });
+</script>
+</body>
+</html>

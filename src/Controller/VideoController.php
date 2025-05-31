@@ -35,12 +35,11 @@ final class VideoController extends AbstractController
     #[Route('/api/videos', name: 'app_videos_api')]
     public function getVideos(
         Request $request,
-        UserManager $userManager,
         VideoRepository $videoRepository,
     ): JsonResponse {
         try {
             $page = $request->query->getInt('page', 1);
-            $limit = $request->query->getInt('limit', 10);
+            $limit = $request->query->getInt('limit', 5);
 
             $videos = $videoRepository->findPaginatedVideos($page, $limit);
 
@@ -48,7 +47,6 @@ final class VideoController extends AbstractController
                 'videos' => array_map(fn($video) => [
                     'id' => $video->getId(),
                     'title' => $video->getTitle(),
-                    'description' => $video->getDescription(),
                     'filePath' => $video->getFilePath(),
                     'createdAt' => $video->getCreatedAt()->format('Y-m-d H:i:s'),
                 ], $videos),
@@ -61,27 +59,35 @@ final class VideoController extends AbstractController
 
     #[Route('/upload', name: 'video_upload')]
     public function uploadVideo(Request $request, EntityManagerInterface $entityManager): Response{
-        $video = new Video();
-        $form = $this->createForm(VideoType::class, $video);
-        $form->handleRequest($request);
-        $videoUploadDir = 'uploads/videos';
+        try {
+            $video = new Video();
+            $form = $this->createForm(VideoType::class, $video);
+            $form->handleRequest($request);
+            $videoUploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/videos';
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $videoFile = $form->get('videoFile')->getData();
+            if ($form->isSubmitted() && $form->isValid()) {
+                $videoFile = $form->get('videoFile')->getData();
 
-            if ($videoFile) {
-                $filename = uniqid() . '.' . $videoFile->guessExtension();
-                $videoFile->move($videoUploadDir, $filename);
-                $video->setFilePath('/uploads/videos/'.$filename);
+                if ($videoFile) {
+                    $filename = uniqid() . '.' . $videoFile->guessExtension();
+                    $videoFile->move($videoUploadDir, $filename);
+                    $video->setFilePath('/uploads/videos/' . $filename);
+
+                    $video->setCreatedAt(new \DateTimeImmutable());
+
+                    $entityManager->persist($video);
+                    $entityManager->flush();
+
+                    $this->addFlash('success', 'Video uploaded successfully');
+
+                    return $this->redirectToRoute('video_upload');
+                }
+
             }
-            $video->setCreatedAt(new \DateTimeImmutable());
-
-            $entityManager->persist($video);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('/upload');
+            return $this->render('video/upload.html.twig', [
+                'form' => $form->createView(),]);
+        } catch (\Exception $e) {
+            throw $this->createNotFoundException($e->getMessage());
         }
-        return $this->render('video/upload.html.twig', [
-            'form' => $form->createView(),]);
     }
 }

@@ -1,15 +1,65 @@
 body {
-    background-color: skyblue;
+    background-color: #000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #fff;
+    overflow-x: hidden;
+    position: relative;
+    height: 100vh;
 }
-.main-menu{
-    background-color: #0a53be;
-}
-.dropdown{
-    background-color: #0a3622;
-}
-.dropdown-content{
-    background-color: #0d6efd;
+/*.main-menu{*/
+/*    background-color: #0a53be;*/
+/*}*/
+/*.dropdown{*/
+/*    background-color: #0a3622;*/
+/*}*/
+/*.dropdown-content{*/
+/*    background-color: #0d6efd;*/
+/*}*/
+#video-feed{
+    /*background-color: #1ea471;*/
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 .video-container{
-    background-color: #1ea471;
+    position: relative;
+    height: 100%;
+    width: 100%;
+    scroll-snap-align: start;
+}
+video{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.video-info{
+    position: absolute;
+    bottom: 80px;
+    left: 12px;
+    max-width: 70%;
+}
+.video-title{
+    font-size: 18px;
+    margin-bottom: 8px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.loading{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color:white;
+    font-size: 24px;
+}
+
+#video-feed::-webkit-scrollbar {
+    display: none;
+}
+#video-feed {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

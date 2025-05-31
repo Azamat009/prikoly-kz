@@ -11,59 +11,102 @@ console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
 
 document.addEventListener('DOMContentLoaded', () => {
     const videoFeed = document.getElementById('video-feed');
-    let page = 1;
+    const loadingIndicator = document.querySelector('.loading');
+    let currentPage = 1;
     let isLoading = false;
+    let videosLoaded = false;
+
+    function createVideoElement(video) {
+        const container = document.createElement('div');
+        container.className = 'video-container';
+
+        const videoEl = document.createElement('video');
+        videoEl.playsInline = true;
+        videoEl.muted = true;
+        videoEl.autoplay = true;
+        videoEl.loop = true;
+        videoEl.src = video.filePath;
+
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'video-info';
+        infoDiv.innerHTML = `<h3 class="video-title">${video.title}</h3>`;
+
+        container.appendChild(videoEl);
+        container.appendChild(infoDiv);
+
+        videoEl.addEventListener('click', () => {
+            videoEl.muted = !videoEl.muted;
+        });
+
+        return container;
+    }
 
     async function loadVideos() {
         if (isLoading) return;
         isLoading = true;
 
         try {
-            const response = await fetch(`/api/videos?page=${page}`);
+            const response = await fetch(`/api/videos?page=${currentPage}`);
             const data = await response.json();
 
-            data.videos.forEach(video => {
-                videoFeed.appendChild(createVideoElement(video));
-            });
+            if (data.videos.length > 0) {
+                data.videos.forEach(video => {
+                    const videoElement = createVideoElement(video);
+                    videoFeed.appendChild(videoElement);
+                });
 
-            page = data.nextPage || page;
+                videosLoaded = true;
+                loadingIndicator.style.display = 'none';
+                currentPage = data.nextPage || currentPage;
+
+                if (currentPage === 1) {
+                    const firstVideo = videoFeed.querySelector('video');
+                    if (firstVideo) {
+                        firstVideo.play().catch(e => console.log('Автовоспроизведение:', e));
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки:', error);
         } finally {
             isLoading = false;
         }
     }
 
-    function createVideoElement(video){
-        const element = document.createElement('div');
-        element.className = 'video-item';
-        element.innerHTML = `
-            <video controls src="${video.filePath}"></video>
-            <h3>${video.title}</h3>
-            <p>${video.description}</p>
-            <div class="reactions">
-                ${['haha', 'like', 'love', 'sad'].map(emotion =>
-                    `<button class="reaction-btn"
-                            data-emotion="${emotion}"
-                            data-video-id="${video.id}">
-                        ${getEmoji(emotion)}</button>`).join('')}
-            </div>`;
-        return element;
-    }
+    function handleScroll() {
+        if (isLoading || !videosLoaded) return;
 
-    window.addEventListener('scroll', () => {
-        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+        const lastVideo = videoFeed.lastElementChild;
+        if (!lastVideo) return;
+
+        const lastVideoOffset = lastVideo.offsetTop + lastVideo.clientHeight;
+        const pageOffset = window.pageYOffset + window.innerHeight;
+
+        if (pageOffset > lastVideoOffset - 10) {
             loadVideos();
         }
-    });
+    }
 
     loadVideos();
+    window.addEventListener('scroll', handleScroll);
 
-    function getEmoji(emotion) {
-        const emojis = {
-            haha: '😆',
-            like: '👍',
-            love: '❤️',
-            sad: '😢'
-        };
-        return emojis[emotion] || '';
+    function handleTouchStart(event) {
+        if (videosLoaded) {
+            event.preventDefault();
+        }
     }
+
+    let touchStartY = 0;
+    videoFeed.addEventListener('touchstart', e => {
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    videoFeed.addEventListener('touchend', e => {
+        const touchEndY = e.changedTouches[0].clientY;
+        const diff = touchStartY - touchEndY;
+
+        if (diff > 50) {
+            loadVideos();
+        }
+    }, { passive: true });
 });

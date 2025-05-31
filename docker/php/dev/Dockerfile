@@ -32,3 +32,11 @@ RUN curl -sS https://get.symfony.com/cli/installer | bash && \
 
 # Set working directory
 WORKDIR /var/www/html
+
+RUN { \
+    echo 'upload_max_filesize = 100M'; \
+    echo 'post_max_size = 100M'; \
+    echo 'memory_limit = 256M'; \
+    echo 'max_execution_time = 300'; \
+    echo 'max_input_time = 300'; \
+} > /usr/local/etc/php/conf.d/uploads.ini
