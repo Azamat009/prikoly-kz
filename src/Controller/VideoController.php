@@ -90,4 +90,24 @@ final class VideoController extends AbstractController
             throw $this->createNotFoundException($e->getMessage());
         }
     }
+
+    #[Route('/api/video/{id}', name: 'app_video_api')]
+    public function getVideo(int $id, VideoRepository $videoRepository): JsonResponse{
+        try {
+            $video = $videoRepository->find($id);
+
+            if (!$video) {
+                throw $this->createNotFoundException('Video not found');
+            }
+
+            return $this->json([
+                'id' => $video->getId(),
+                'title' => $video->getTitle(),
+                'filePath' => $video->getFilePath(),
+                'createdAt' => $video->getCreatedAt()->format('Y-m-d H:i:s'),
+            ]);
+        } catch (\Exception $e){
+            throw $this->createNotFoundException($e->getMessage());
+        }
+    }
 }
