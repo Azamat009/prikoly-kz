@@ -34,9 +34,13 @@ class User
     #[ORM\OneToMany(targetEntity: Feedback::class, mappedBy: 'userId')]
     private Collection $feedback;
 
+    #[ORM\Column(type: TYPES::DATETIME_IMMUTABLE, nullable: false)]
+    private \DateTimeInterface $createdAt;
+
     public function __construct()
     {
         $this->feedback = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -87,11 +91,15 @@ class User
         return $this->feedback;
     }
 
+    public function getCreatedAt(): \DateTimeInterface{
+        return $this->createdAt;
+    }
+
     public function addFeedback(Feedback $feedback): static
     {
         if (!$this->feedback->contains($feedback)) {
             $this->feedback->add($feedback);
-            $feedback->setUserId($this);
+            $feedback->setUser($this);
         }
 
         return $this;
@@ -101,8 +109,8 @@ class User
     {
         if ($this->feedback->removeElement($feedback)) {
             // set the owning side to null (unless already changed)
-            if ($feedback->getUserId() === $this) {
-                $feedback->setUserId(null);
+            if ($feedback->getUser() === $this) {
+                $feedback->setUser(null);
             }
         }
 

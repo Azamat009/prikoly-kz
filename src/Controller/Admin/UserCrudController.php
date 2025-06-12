@@ -3,6 +3,8 @@
 namespace App\Controller\Admin;
 
 use App\Entity\User;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -17,6 +19,11 @@ class UserCrudController extends AbstractCrudController
         return User::class;
     }
 
+    public function configureActions(Actions $actions): Actions{
+        return $actions
+            ->remove(Crud::PAGE_INDEX, Action::NEW);
+    }
+
     public function configureCrud(Crud $crud): Crud{
         return $crud
             ->setEntityLabelInSingular('User')
@@ -26,18 +33,8 @@ class UserCrudController extends AbstractCrudController
     }
 
     public function configureFields(string $pageName): iterable{
-        yield IdField::new('id', 'ID');
-        yield TextField::new('uuid', 'UUID');
+        yield IdField::new('id', 'ID')->onlyOnIndex();
+        yield TextField::new('uuid', 'UUID')->onlyOnIndex();
+        yield DateTimeField::new('createdAt', 'Created At')->onlyOnIndex();
     }
-
-    /*
-    public function configureFields(string $pageName): iterable
-    {
-        return [
-            IdField::new('id'),
-            TextField::new('title'),
-            TextEditorField::new('description'),
-        ];
-    }
-    */
 }

@@ -1,65 +1,331 @@
-body {
-    background-color: #000;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    background: #000;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: #fff;
-    overflow-x: hidden;
-    position: relative;
-    height: 100vh;
 }
-/*.main-menu{*/
-/*    background-color: #0a53be;*/
-/*}*/
-/*.dropdown{*/
-/*    background-color: #0a3622;*/
-/*}*/
-/*.dropdown-content{*/
-/*    background-color: #0d6efd;*/
-/*}*/
-#video-feed{
-    /*background-color: #1ea471;*/
-    position: relative;
+
+#video-feed {
     height: 100vh;
-    overflow: hidden;
+    width: 100%;
+    overflow-y: scroll;
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
 }
-.video-container{
-    position: relative;
-    height: 100%;
+
+.video-container {
+    height: 100vh;
     width: 100%;
+    position: relative;
     scroll-snap-align: start;
 }
-video{
+
+video {
     position: absolute;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    background: #000;
 }
-.video-info{
+
+.video-info {
     position: absolute;
     bottom: 80px;
     left: 12px;
     max-width: 70%;
+    z-index: 10;
 }
-.video-title{
+
+.video-title {
     font-size: 18px;
     margin-bottom: 8px;
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
-.loading{
+
+.loading {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color:white;
+    color: white;
     font-size: 24px;
+    z-index: 100;
 }
 
+.video-actions {
+    position: absolute;
+    right: 15px;
+    bottom: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
+    gap: 20px;
+}
+
+.action-button {
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 24px;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+}
+
+.action-button:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.action-label {
+    font-size: 12px;
+    margin-top: 5px;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.share-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.share-modal.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.share-content {
+    background: #1e1e1e;
+    border-radius: 15px;
+    padding: 25px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.share-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.share-options {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.share-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.share-option:hover {
+    transform: scale(1.1);
+}
+
+.share-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.copy-link {
+    display: flex;
+    background: #333;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.copy-link input {
+    flex: 1;
+    padding: 12px 15px;
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 16px;
+}
+
+.copy-link button {
+    padding: 0 15px;
+    border: none;
+    background: #ff0050;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.close-share {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 30px;
+    color: white;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Скрыть скроллбар */
 #video-feed::-webkit-scrollbar {
     display: none;
 }
 #video-feed {
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+
+
+* {
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    background: #000;
+    color: #fff;
+    min-height: 100vh;
+}
+
+.upload-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #121212;
+    border-radius: 12px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="file"] {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #222;
+    color: #fff;
+    font-size: 16px;
+}
+
+.btn-upload {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: #1BC529FF;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-upload:hover {
+    background: #1BC529FF;
+}
+
+.flash-message {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.flash-success {
+    background: #4CAF50;
+}
+
+.upload-preview {
+    margin-top: 20px;
+    display: none;
+}
+
+#videoPreview {
+    width: 100%;
+    border-radius: 8px;
+}
+
+/* Добавьте эти стили */
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow-y: auto; /* Разрешаем скролл всей страницы */
+}
+
+.share-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.share-modal.hidden {
+    display: none; /* Важно использовать display для скрытия */
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
 }

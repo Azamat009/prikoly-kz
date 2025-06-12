@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Video;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -17,6 +18,10 @@ class VideoType extends AbstractType{
             ->add('title', TextType::class, [
                 'label' => 'Название видео',
                 'attr' => ['placeholder' => 'Введите название...']
+            ])
+            ->add('description', TextType::class, [
+                'label' => 'Описание видео',
+                'attr' => ['placeholder' => 'Введите описание']
             ])
             ->add('videoFile', FileType::class, [
                 'label' => 'Видео файл',

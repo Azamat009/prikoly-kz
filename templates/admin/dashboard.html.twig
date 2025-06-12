@@ -1,0 +1,128 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+{% block content %}
+{#    {{ encore_entry_link_tags('styles/admin/admin_dashboard_style') }}#}
+    {{ encore_entry_script_tags('app') }}
+    <div class="container-fluid">
+        <div class="row mb-4" style="padding: 20px">
+            <div class="col-md-3">
+                <a href="{{ ea_url().setController('App\\Controller\\Admin\\VideoCrudController') }}">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                Общее количество видео
+                            </h5>
+                            <p class="card-text">{{ videoCount }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ ea_url().setController('App\\Controller\\Admin\\UserCrudController') }}">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                Количество пользователей
+                            </h5>
+                            <div class="card-text">{{ userCount }}</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ ea_url().setController('App\\Controller\\Admin\\ReportCrudController') }}">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                Количество жалоб
+                            </h5>
+                            <div class="card-text">
+                                {{ reportCount }}
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ ea_url().setController('App\\Controller\\Admin\\ReactionCrudController') }}">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                Общее количество реакции
+                            </h5>
+                            <div class="card-text">
+                                {{ reactionCount }}
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h3>
+                    Последние видео
+                </h3>
+                <ul>
+                    {% for video in recentVideos %}
+                        <li>{{ video.title }} ({{ video.createdAt|date('Y-m-d') }})</li>
+                    {% else %}
+                        <li>Нет последних видео</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h3>
+                    Последние жалобы
+                </h3>
+                <ul>
+                    {% for report in recentReports %}
+                        <li>{{ report.reason }} ({{ report.createdAt|date('Y-m-d') }})</li>
+                    {% else %}
+                    <li>Нет последних жалоб</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="row-md-6">
+                <h3>Обратная связь</h3>
+                <ul>
+                    {% for feedback in recentFeedbacks %}
+                        <li>{{ feedback.message }} ({{ feedback.createdAt|date('Y-m-d') }})</li>
+                    {% else %}
+                        <li>Нет заявок обратной связи</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Количество новых пользователей (за последние 30 дней)</h3>
+                <canvas id="clientChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('clientChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ usersLabel|raw }},
+                datasets: [{
+                    label: 'Users',
+                    data: {{ usersData|raw }},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {reverse: true, title: {display: true, text: 'Date'} },
+                    y: {title: {display: true, text: 'Users'}, beginAtZero: true}
+                }
+            }
+        });
+    </script>
+
+{% endblock %}
