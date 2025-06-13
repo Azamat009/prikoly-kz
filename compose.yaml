@@ -37,12 +37,23 @@ services:
       - "80:80"
     volumes:
       - .:/var/www/html
-      - ./docker/nginx:/etc/nginx/conf.d
+      - ./docker/nginx/prod:/etc/nginx/conf.d
     depends_on:
       - php
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    depends_on:
+      - nginx
+    command: certonly --webroot --webroot-path=/var/www/certbot --email azamat009@gmail.com --agree-tos --no-eff-email -d prikoldar.kz
 ###< doctrine/doctrine-bundle ###
 
 volumes:
 ###> doctrine/doctrine-bundle ###
   database_data:
+  certbot-etc:
+  certbot-www:
 ###< doctrine/doctrine-bundle ###

@@ -16,6 +16,11 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
+  nginx:
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/dev:/etc/nginx/conf.d
+
   php:
     build:
       context: ./docker/php/dev
