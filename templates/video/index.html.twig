@@ -12,8 +12,13 @@
 <div class="video-feed"
      data-controller="video-feed"
      data-video-feed-api-url-value="{{ path('app_videos_api') }}"
->
+     style="height: 100vh; overflow-y: scroll;">
 
+    <div data-video-feed-target="videoFeed"></div>
+
+    <div data-video-feed-target="loader" style="display: none;">
+        Loading...
+    </div>
 </div>
 </body>
 </html>
