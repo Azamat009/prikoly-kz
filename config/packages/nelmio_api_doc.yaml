@@ -1,0 +1,14 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: Prikoly KZ
+            description: API для сайта с приколами
+            version: 1.0.0
+#        components:
+#            securitySchemes:
+#                Bearer:
+#                    type: http
+
+    areas: # to filter documented areas
+        path_patterns:
+            - ^/api(?!/doc$) # Accepts routes under /api except /api/doc
