@@ -1,0 +1,72 @@
+name: Deploy Symfony to Production
+
+on:
+#  push:
+#    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment prod/stage'
+        required: true
+        default: 'prod'
+      skip-db:
+        description: 'Skip database migrations'
+        type: boolean
+        default: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Show inputs
+        run: |
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Skip DB: ${{ github.event.inputs.skip-db }}"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Копируем проект на сервер
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.0
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "./"
+          target: "/var/www/prikoldar.kz/"
+          overwrite: true
+          rm: true  # Удалить лишние файлы на сервере
+          strip_components: 1
+
+      # Запускаем Docker Compose и Symfony команды
+      - name: Deploy and setup Symfony
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/prikoldar.kz
+            
+            # Поднимаем контейнеры
+            docker compose up -d --build --remove-orphans
+            
+            # Устанавливаем зависимости
+            docker compose exec -T php composer install --no-dev --optimize-autoloader
+            
+            # Применяем миграции
+            docker compose exec -T php bin/console doctrine:migrations:migrate -n
+            
+            # Очищаем кэш
+            docker compose exec -T php bin/console cache:clear
+            docker compose exec -T php bin/console cache:warmup
+            
+            # Устанавливаем права
+            docker compose exec -T php chown -R www-data:www-data var
+            
+            # Обновляем SSL сертификаты (если нужно)
+            docker compose run --rm certbot renew
+            
+            # Перезагружаем Nginx
+            docker compose exec nginx nginx -s reload
